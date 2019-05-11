@@ -1,11 +1,13 @@
-#include <RH_ASK.h>
 #include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
 
 //Comm-------------------------------------------------------
-RH_ASK driver;
-char key;
-String data = "";
-String message;
+RF24 radio (7, 8); // CE, CSN
+const byte addresses[][6] = {"00001", "00002"};
+String data ="";
+boolean dataOutB = false;
+String dataOut;
 int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
 int runningB, x, y, z, f1, f2;
 String runningS, xS ,yS, zS, f1S, f2S;
@@ -15,73 +17,65 @@ String runningS, xS ,yS, zS, f1S, f2S;
 void setup() {
   
   Serial.begin(9600);
-  if(!driver.init())
-    Serial.println("Radio driver init failed");
-  else
-    Serial.println("Initialized");
-    
-  delay(500);
+
+  radio.begin();
+  radio.openWritingPipe(addresses[0]); // 00001
+  radio.openReadingPipe(1, addresses[1]); // 00002
+  radio.setPALevel(RF24_PA_MIN);
   
 }
 
 void loop(){
-  readRadio();
-  printData();
-}
 
-boolean readRadio(){
-  //Reads radio data sent
-  uint8_t buf[28];
-  uint8_t buflen = sizeof(buf);
-  while(driver.recv(buf, &buflen)){
-    
+  //Control
+  delay(5);
+  radio.startListening();
     //Reading
-    data = buf;
+    if(radio.available()){
+      
+      radio.read(&data, sizeof(data));
+  
+      //Indexing
+      ind1 = data.indexOf('/');
+      ind2 = data.indexOf('/',ind1+1);
+      ind3 = data.indexOf('/',ind2+1);
+      ind4 = data.indexOf('/',ind3+1);
+      ind5 = data.indexOf('/',ind4+1);
+      endInd = data.indexOf('>');
+  
+      //String Data
+      runningS = data.substring(startInd+1,ind1);
+      xS = data.substring(ind1+1,ind2);
+      yS = data.substring(ind2+1,ind3);
+      zS = data.substring(ind3+1,ind4);
+      f1S = data.substring(ind4+1,endInd);
+      f2S = data.substring(ind5+1,endInd);
+      
+      //Int data
+      runningB = runningS.toInt();
+      x = xS.toInt();
+      y = yS.toInt();
+      z = zS.toInt();
+      f1 = f1S.toInt();
+      f2 = f2S.toInt();
+  
 
-    //Indexing
-    ind1 = data.indexOf('/');
-    ind2 = data.indexOf('/',ind1+1);
-    ind3 = data.indexOf('/',ind2+1);
-    ind4 = data.indexOf('/',ind3+1);
-    ind5 = data.indexOf('/',ind4+1);
-    endInd = data.indexOf('>');
 
-    //String Data
-    runningS = data.substring(startInd+1,ind1);
-    xS = data.substring(ind1+1,ind2);
-    yS = data.substring(ind2+1,ind3);
-    zS = data.substring(ind3+1,ind4);
-    f1S = data.substring(ind4+1,endInd);
-    f2S = data.substring(ind5+1,endInd);
-    
-    //Int data
-    runningB = runningS.toInt();
-    x = xS.toInt();
-    y = yS.toInt();
-    z = zS.toInt();
-    f1 = f1S.toInt();
-    f2 = f2S.toInt();
+      //Control motors here :)
+      
+    }
 
-    //Message
-    message = "<";
-    message.concat(runningS);
-    message.concat("/");
-    message.concat(x);
-    message.concat("/");
-    message.concat(y);
-    message.concat("/");
-    message.concat(z);
-    message.concat("/");
-    message.concat(f1);
-    message.concat("/");
-    message.concat(f2);
-    message.concat(">");
-    
-  }
+  //Responce
+  delay(5);
+  radio.stopListening();
+  if(dataOutB)
+    radio.write(&dataOut, sizeof(dataOut));
+
 }
 
-void printData() {
-  
-  Serial.println("Recieved: "+message);
+
+void respond(String response){
+  dataOutB = true;
+  dataOut = response;
 
 }
