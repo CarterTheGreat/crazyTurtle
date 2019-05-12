@@ -45,6 +45,10 @@ void setup() {
     radio.setPALevel(RF24_PA_MIN);
   //Motor Driver  
     md.init();
+
+  Serial.print(F("Started "));
+  Serial.print(side);
+  Serial.println(F(" pod");
 }
 
 void loop(){
