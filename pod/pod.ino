@@ -15,7 +15,7 @@
 
 //Comm
   RF24 radio (7, 8); // CE, CSN
-  const byte addresses[][6] = {"00001", "00002"};
+  const byte addresses[][6] = {"XXXXX", "XXXXX"};
   char dataIn[28] = "";
   String data = "";
   boolean dataOutB = false;
@@ -31,8 +31,8 @@
   const String RIGHT = "right";
 
 //SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
-  String side = LEFT;
-  //String side = RIGHT;
+  //String side = LEFT;
+  String side = RIGHT;
   
 void setup() {
   
@@ -40,8 +40,8 @@ void setup() {
 
   //Radio
     radio.begin();
-    radio.openWritingPipe(addresses[0]); // 00001
-    radio.openReadingPipe(1, addresses[1]); // 00002
+    radio.openWritingPipe(addresses[0]);     // Disregard 00001
+    radio.openReadingPipe(1, addresses[1]);  // Disregard 00002
     radio.setPALevel(RF24_PA_MIN);
   //Motor Driver  
     md.init();
@@ -62,8 +62,8 @@ void loop(){
         radio.read(&dataIn, sizeof(dataIn));
   
       //Testing
-      Serial.print("Recieved: ");
-      Serial.println(dataIn);
+      //Serial.print("Recieved: ");
+      //Serial.println(dataIn);
 
       data = String(dataIn);
   
@@ -94,28 +94,32 @@ void loop(){
       //Control motors
         if(x < 30 && x > -30)
           x = 0;
-        if(y < 30 && x > -30)
+        if(y < 30 && y > -30)
           y = 0;
 
-        x = map(x, -260, 260, 400, 400);
-        y = map(y, -260, 260, 400, 400);
+        //x = map(x, -260, 260, -400, 400);
+        //y = map(y, -260, 260, -400, 400);
         
-        int xIn = -x;
-        int yIn = -y;    
         //For left
         if(side == LEFT){
-          //md.setSpeed(-y+x);
-          md.setSpeeds(yIn-xIn, yIn-xIn);
+          int funct = -y+x;
+          int motorSpeed = map(funct, -520, 520, -400, 400);
+          md.setSpeeds(motorSpeed, motorSpeed);
           Serial.print(F("Speed set to: "));
-          Serial.println(yIn-xIn);
+          Serial.println(motorSpeed);
+          Serial.print(F("Funct = "));
+          Serial.println(funct);
         }
         
         //For right
         if(side == RIGHT){
-          //md.setSpeed(-y-x);
-          md.setSpeeds(yIn+xIn, yIn-xIn);
+          int funct = -y-x;
+          int motorSpeed = map(funct, -520, 520, -400, 400);
+          md.setSpeeds(motorSpeed, motorSpeed);
           Serial.print(F("Speed set to: "));
-          Serial.println(yIn+xIn);
+          Serial.println(motorSpeed);
+          Serial.print(F("Funct = "));
+          Serial.println(funct);
         }
     }
 
