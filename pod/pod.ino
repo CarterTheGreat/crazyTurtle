@@ -48,7 +48,7 @@ void setup() {
 
   Serial.print(F("Started "));
   Serial.print(side);
-  Serial.println(F(" pod");
+  Serial.println(F(" pod"));
 }
 
 void loop(){
