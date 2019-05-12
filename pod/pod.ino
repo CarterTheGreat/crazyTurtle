@@ -6,7 +6,7 @@
 
 /*
  * Mini Pod Code
- * V 0.1
+ * V 0.2
  * 
  * Carter Watts
  * 
@@ -103,7 +103,7 @@ void loop(){
         //For left
         if(side == LEFT){
           int funct = -y+x;
-          int motorSpeed = map(funct, -520, 520, -400, 400);
+          int motorSpeed = map(funct, -370, 370, -400, 400);
           md.setSpeeds(motorSpeed, motorSpeed);
           Serial.print(F("Speed set to: "));
           Serial.println(motorSpeed);
@@ -113,8 +113,8 @@ void loop(){
         
         //For right
         if(side == RIGHT){
-          int funct = -y-x;
-          int motorSpeed = map(funct, -520, 520, -400, 400);
+          int funct = y+x;
+          int motorSpeed = map(funct, -370, 370, -400, 400);
           md.setSpeeds(motorSpeed, motorSpeed);
           Serial.print(F("Speed set to: "));
           Serial.println(motorSpeed);
