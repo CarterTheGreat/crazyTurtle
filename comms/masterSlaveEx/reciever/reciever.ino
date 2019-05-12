@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include "RF24.h"
   
-// on Nano or Mini Pro
+// on Nano, Mini Pro, or Uno
 // |--------------------|
 // |    UPSIDE      8 7 |
 // |     PINS       6 5 |\
@@ -17,23 +17,15 @@
 // 5 SCK  GREEN            13
 // 6 MOSI BLUE             11
 // 7 MISO VIOLET           12
-  
-/* Hardware configuration: Set up nRF24L01 radio /*
-/* on SPI bus plus pins 7 & 8 */
-RF24 radio(7,8);
-  
-byte addresses[2][6] = {"XXXXX","XXXXX"};
+// on SPI bus plus pins 7 & 8 
+
+//Radio
+  RF24 radio(7,8);
+  byte addresses[2][6] = {"XXXXX","XXXXX"};
   
 void setup() {
   Serial.begin(115200);
   Serial.println(F("RF24 Receiver started"));
- 
-  // Set the PA Level low (RF24_PA_LOW) to prevent
-  // power supply related issues since this is a
-  // getting_started sketch, and the likelihood of
-  // close proximity of the devices. RF24_PA_MAX is default.
-  // Open a writing and reading pipe on each radio,
-  // with opposite addresses
  
   radio.begin();
   radio.setPALevel(RF24_PA_MAX);
@@ -46,16 +38,16 @@ void loop() {
  
   if( radio.available()){
  
-    unsigned long timeReceived;
+    char data[28] = "";
   
     while (radio.available()) {
-      radio.read( &timeReceived, sizeof(unsigned long) );
+      radio.read( &data, sizeof(data) );
     }
  
-    radio.stopListening();
-    radio.write( &timeReceived, sizeof(unsigned long) );
+    //radio.stopListening();
+    //radio.write( &data, sizeof(data) );
   
-    Serial.print(F("Sent response "));
-    Serial.println(timeReceived);
+    Serial.print(F("Recieved: "));
+    Serial.println(data);
   }
 }
