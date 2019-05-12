@@ -16,7 +16,8 @@
 //Comm
   RF24 radio (7, 8); // CE, CSN
   const byte addresses[][6] = {"00001", "00002"};
-  String data ="";
+  char dataIn[28] = "";
+  String data = "";
   boolean dataOutB = false;
   String dataOut;
   int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
@@ -26,10 +27,11 @@
 //Motor
   DualVNH5019MotorShield md;
   //Which side of the robot the pod is - needed for arcade control
-  const string LEFT = "left";
-  const string RIGHT = "right";
-  
-  //String side = LEFT;
+  const String LEFT = "left";
+  const String RIGHT = "right";
+
+//SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
+  String side = LEFT;
   //String side = RIGHT;
   
 void setup() {
@@ -52,8 +54,14 @@ void loop(){
   radio.startListening();
     //Reading
     if(radio.available()){
-      
-      radio.read(&data, sizeof(data));
+      while(radio.available())
+        radio.read(&dataIn, sizeof(dataIn));
+  
+      //Testing
+      Serial.print("Recieved: ");
+      Serial.println(dataIn);
+
+      data = String(dataIn);
   
       //Indexing
         ind1 = data.indexOf('/');
@@ -80,32 +88,40 @@ void loop(){
         f2 = f2S.toInt();
 
       //Control motors
-
         if(x < 30 && x > -30)
           x = 0;
         if(y < 30 && x > -30)
           y = 0;
-      
-        xIn = -x;
-        yIn = -y;    
-        //For left
-        if(type == LEFT)
-          //md.setSpeed(-y+x);
-          md.setSpeeds(yIn-xIn);
-  
-        //For right
-        if(side == RIGHT)
-          //md.setSpeed(-y-x);
-          md.setSpeeds(yIn+xIn);
 
+        x = map(x, -260, 260, 400, 400);
+        y = map(y, -260, 260, 400, 400);
+        
+        int xIn = -x;
+        int yIn = -y;    
+        //For left
+        if(side == LEFT){
+          //md.setSpeed(-y+x);
+          md.setSpeeds(yIn-xIn, yIn-xIn);
+          Serial.print(F("Speed set to: "));
+          Serial.println(yIn-xIn);
+        }
+        
+        //For right
+        if(side == RIGHT){
+          //md.setSpeed(-y-x);
+          md.setSpeeds(yIn+xIn, yIn-xIn);
+          Serial.print(F("Speed set to: "));
+          Serial.println(yIn+xIn);
+        }
     }
 
-  //Response
+  //Response test after motor success
+  /*
     delay(5);
     radio.stopListening();
     if(dataOutB)
       radio.write(&dataOut, sizeof(dataOut));
-  
+  */
 }
 
 void respond(String response){
