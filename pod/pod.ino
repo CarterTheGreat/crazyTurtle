@@ -25,7 +25,17 @@
   String runningS, xS ,yS, zS, f1S, f2S;
 
 //Motor
-  DualVNH5019MotorShield md;
+  DualVNH5019MotorShield(unsigned char 2,        //INA1
+                          unsigned char 4,    //INB1
+                          unsigned char 9,    //PWM1
+                          unsigned char 6,//EN1DIAG1
+                          unsigned char A0,     //CS1
+                          unsigned char 3,    //INA2
+                          unsigned char 5,    //INB2
+                          unsigned char 10,    //PWM2
+                          unsigned char 1,//EN2DIAG2
+                          unsigned char A1)     //CS2
+                          
   //Which side of the robot the pod is - needed for arcade control
   const String LEFT = "left";
   const String RIGHT = "right";
