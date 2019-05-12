@@ -96,30 +96,33 @@ void loop(){
           x = 0;
         if(y < 30 && y > -30)
           y = 0;
-
-        //x = map(x, -260, 260, -400, 400);
-        //y = map(y, -260, 260, -400, 400);
         
         //For left
         if(side == LEFT){
           int funct = -y+x;
+            //if (funct < 30 && funct > -30) For setting brakes
           int motorSpeed = map(funct, -370, 370, -400, 400);
           md.setSpeeds(motorSpeed, motorSpeed);
+          /*
           Serial.print(F("Speed set to: "));
           Serial.println(motorSpeed);
           Serial.print(F("Funct = "));
           Serial.println(funct);
+          */
         }
         
         //For right
         if(side == RIGHT){
           int funct = y+x;
+            //if (funct < 30 && funct > -30) For setting brakes
           int motorSpeed = map(funct, -370, 370, -400, 400);
           md.setSpeeds(motorSpeed, motorSpeed);
+          /*
           Serial.print(F("Speed set to: "));
           Serial.println(motorSpeed);
           Serial.print(F("Funct = "));
           Serial.println(funct);
+          */
         }
     }
 
