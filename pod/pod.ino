@@ -15,7 +15,7 @@
 
 //Comm
   RF24 radio (7, 8); // CE, CSN
-  const byte addresses[][6] = {"XXXXX", "XXXXX"};
+  const byte addresses[][6] = {"AAAAA", "AAAAA"};
   char dataIn[28] = "";
   String data = "";
   boolean dataOutB = false;
@@ -33,9 +33,9 @@ unsigned char CS1 = A0;
 unsigned char INA2 = 3;
 unsigned char INB2 = 5;
 unsigned char PWM2 = 10;
-unsigned char EN2DIAG2 = 1;
+unsigned char EN2DIAG2 = 6;
 unsigned char CS2 = A1;
-  DualVNH5019MotorShield md (INA1,
+DualVNH5019MotorShield md (INA1,
                          INB1,
                          PWM1,
                          EN1DIAG1,
@@ -51,20 +51,25 @@ unsigned char CS2 = A1;
   const String RIGHT = "right";
 
 //SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
-  //String side = LEFT;
-  String side = RIGHT;
+  String side = LEFT;
+  //String side = RIGHT;
   
 void setup() {
   
   Serial.begin(115200);
-
+  
   //Radio
     radio.begin();
     radio.openWritingPipe(addresses[0]);     // Disregard 00001
     radio.openReadingPipe(1, addresses[1]);  // Disregard 00002
-    radio.setPALevel(RF24_PA_MIN);
+    radio.setPALevel(RF24_PA_MAX);
+    
+
+    delay(1000);
+    
   //Motor Driver  
     md.init();
+    Serial.println("Motor Driver Starting");
 
   Serial.print(F("Started "));
   Serial.print(side);
@@ -74,7 +79,9 @@ void setup() {
 void loop(){
 
   //Control
-  delay(5);
+  
+  md.init();
+  
   radio.startListening();
     //Reading
     if(radio.available()){
@@ -82,8 +89,8 @@ void loop(){
         radio.read(&dataIn, sizeof(dataIn));
   
       //Testing
-      //Serial.print("Recieved: ");
-      //Serial.println(dataIn);
+      Serial.print("Recieved: ");
+      Serial.println(dataIn);
 
       data = String(dataIn);
   
@@ -111,6 +118,9 @@ void loop(){
         f1 = f1S.toInt();
         f2 = f2S.toInt();
 
+
+
+      
       //Control motors
         if(x < 30 && x > -30)
           x = 0;
@@ -123,12 +133,12 @@ void loop(){
             //if (funct < 30 && funct > -30) For setting brakes
           int motorSpeed = map(funct, -370, 370, -400, 400);
           md.setSpeeds(motorSpeed, motorSpeed);
-          /*
+          //stopIfFault();
           Serial.print(F("Speed set to: "));
           Serial.println(motorSpeed);
           Serial.print(F("Funct = "));
           Serial.println(funct);
-          */
+          
         }
         
         //For right
@@ -137,22 +147,18 @@ void loop(){
             //if (funct < 30 && funct > -30) For setting brakes
           int motorSpeed = map(funct, -370, 370, -400, 400);
           md.setSpeeds(motorSpeed, motorSpeed);
-          /*
+          //stopIfFault();
           Serial.print(F("Speed set to: "));
           Serial.println(motorSpeed);
           Serial.print(F("Funct = "));
           Serial.println(funct);
-          */
+          
         }
-    }
+        
+    } 
+      
+      //Serial.println("Looped");
 
-  //Response test after motor success
-  /*
-    delay(5);
-    radio.stopListening();
-    if(dataOutB)
-      radio.write(&dataOut, sizeof(dataOut));
-  */
 }
 
 void respond(String response){
@@ -165,11 +171,11 @@ void stopIfFault(){
   
   if (md.getM1Fault()){
     Serial.println("M1 fault");
-    while(1);
+    delay(10);
   }
   if (md.getM2Fault()){
     Serial.println("M2 fault");
-    while(1);
+    delay(10);
   }
   
 }

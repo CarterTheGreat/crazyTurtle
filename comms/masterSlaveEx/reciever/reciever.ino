@@ -21,7 +21,7 @@
 
 //Radio
   RF24 radio(7,8);
-  byte addresses[2][6] = {"XXXXX","XXXXX"};
+  byte addresses[2][6] = {"AAAAA","AAAAA"};
   
 void setup() {
   Serial.begin(115200);

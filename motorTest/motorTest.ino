@@ -1,6 +1,26 @@
 #include "DualVNH5019MotorShield.h"
 
-DualVNH5019MotorShield md;
+//Motor
+unsigned char INA1 = 2;
+unsigned char INB1 = 4;
+unsigned char PWM1 = 9;
+unsigned char EN1DIAG1 = 0;
+unsigned char CS1 = A0;
+unsigned char INA2 = 3;
+unsigned char INB2 = 5;
+unsigned char PWM2 = 10;
+unsigned char EN2DIAG2 = 6;
+unsigned char CS2 = A1;
+DualVNH5019MotorShield md(INA1,
+                         INB1,
+                         PWM1,
+                         EN1DIAG1,
+                         CS1,
+                         INA2,
+                         INB2,
+                         PWM2,
+                         EN2DIAG2,
+                         CS2);
 
 void stopIfFault()
 {
