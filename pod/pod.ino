@@ -148,7 +148,29 @@ void loop(){
           //For left
           if(side == LEFT){
             int funct = -y+x;
-              //if (funct < 30 && funct > -30) For setting brakes
+            //brakes
+            if (funct < 30 && funct > -30){
+              void setBrakes(0,0);
+            //Drive
+            }else{
+              int motorSpeed = map(funct, -370, 370, -400, 400);
+              md.setSpeeds(motorSpeed, motorSpeed);
+              //stopIfFault();
+              Serial.print(F("Speed set to: "));
+              Serial.println(motorSpeed);
+              Serial.print(F("Funct = "));
+              Serial.println(funct);
+            }
+          }        
+        
+        //For right
+        if(side == RIGHT){
+          int funct = y+x;
+          //Brakes
+          if (funct < 30 && funct > -30){
+            void setBrakes(0,0);
+            //Drive
+          }else{
             int motorSpeed = map(funct, -370, 370, -400, 400);
             md.setSpeeds(motorSpeed, motorSpeed);
             //stopIfFault();
@@ -156,21 +178,7 @@ void loop(){
             Serial.println(motorSpeed);
             Serial.print(F("Funct = "));
             Serial.println(funct);
-          
-        }        
-        
-        //For right
-        if(side == RIGHT){
-          int funct = y+x;
-            //if (funct < 30 && funct > -30) For setting brakes
-          int motorSpeed = map(funct, -370, 370, -400, 400);
-          md.setSpeeds(motorSpeed, motorSpeed);
-          //stopIfFault();
-          Serial.print(F("Speed set to: "));
-          Serial.println(motorSpeed);
-          Serial.print(F("Funct = "));
-          Serial.println(funct);
-          
+          }          
         }
       }
     } 
