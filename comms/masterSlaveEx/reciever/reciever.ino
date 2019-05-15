@@ -19,6 +19,8 @@
 // 7 MISO VIOLET           12
 // on SPI bus plus pins 7 & 8 
 
+  int led = 4;
+  
 //Radio
   RF24 radio(7,8);
   byte addresses[2][6] = {"AAAAA","AAAAA"};
@@ -26,15 +28,31 @@
 void setup() {
   Serial.begin(115200);
   Serial.println(F("RF24 Receiver started"));
+
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
  
   radio.begin();
   radio.setPALevel(RF24_PA_MAX);
   radio.openWritingPipe(addresses[0]);
   radio.openReadingPipe(1,addresses[1]);
+
+  delay(300);
+  digitalWrite(led, HIGH);
+  delay(300);
+  digitalWrite(led, LOW);
+  delay(300);
+  digitalWrite(led, HIGH);
+  delay(300);  
+  digitalWrite(led, LOW);
+  delay(300);
 }
   
 void loop() {
   radio.startListening();
+
+  delay(5);
+  digitalWrite(led, LOW);
  
   if( radio.available()){
  
@@ -49,5 +67,6 @@ void loop() {
   
     Serial.print(F("Recieved: "));
     Serial.println(data);
+    digitalWrite(led, HIGH);
   }
 }
