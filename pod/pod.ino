@@ -11,7 +11,7 @@
  * Carter Watts
  * 
  * Notes:
- *  Add breaking
+ *  Added breaking TEST
  *  Tune comfortable hand gestures
  *  
  */
@@ -22,8 +22,6 @@
   RF24 radio (7, 8); // CE, CSN
   const byte addresses[][6] = {"AAAAA", "AAAAA"};
   char dataIn[28] = "";
-  String data = "";
-  String dataOut;
   boolean dataOutB = false;
   int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
   int runningB = 0;
@@ -68,8 +66,8 @@ void setup() {
   
   //Radio
     radio.begin();
-    radio.openWritingPipe(addresses[0]);     // Disregard 00001
-    radio.openReadingPipe(1, addresses[1]);  // Disregard 00002
+    radio.openWritingPipe(addresses[0]);
+    radio.openReadingPipe(1, addresses[1]);
     radio.setPALevel(RF24_PA_MAX);
     
     delay(1000);
@@ -112,7 +110,7 @@ void loop(){
       Serial.println(dataIn);
       digitalWrite(led, HIGH);
 
-      data = String(dataIn);
+      String data = String(dataIn);
   
       //Indexing
         ind1 = data.indexOf('/');
@@ -150,7 +148,7 @@ void loop(){
             int funct = -y+x;
             //brakes
             if (funct < 30 && funct > -30){
-              void setBrakes(0,0);
+              md.setBrakes(0,0);
             //Drive
             }else{
               int motorSpeed = map(funct, -370, 370, -400, 400);
@@ -168,7 +166,7 @@ void loop(){
           int funct = y+x;
           //Brakes
           if (funct < 30 && funct > -30){
-            void setBrakes(0,0);
+            md.setBrakes(0,0);
             //Drive
           }else{
             int motorSpeed = map(funct, -370, 370, -400, 400);
@@ -186,7 +184,7 @@ void loop(){
 
 void respond(String response){
   dataOutB = true;
-  dataOut = response;
+  //Send response;
 
 }
 
