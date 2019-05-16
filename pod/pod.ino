@@ -152,7 +152,7 @@ void loop(){
             //Drive
             }else{
               int motorSpeed = map(funct, -370, 370, -400, 400);
-              md.setSpeeds(motorSpeed, motorSpeed);
+              md.setSpeeds(-motorSpeed, -motorSpeed);
               //stopIfFault();
               Serial.print(F("Speed set to: "));
               Serial.println(motorSpeed);
