@@ -1,7 +1,10 @@
 #include <SPI.h>
 #include <DualVNH5019MotorShield.h>
 #include <nRF24L01.h>
-#include <RF24.h>
+#include "RF24.h"
+#include "RF24Network.h"
+#include "RF24Mesh.h"
+#include <EEPROM.h>
 
 
 /*
@@ -15,18 +18,14 @@
  *  Tune comfortable hand gestures
  *  
  */
- 
+
+//Test & Control
   int led = 19;
   
 //Comm
   RF24 radio (7, 8); // CE, CSN
-  const byte addresses[][6] = {"AAAAA", "AAAAA"};
-  char dataIn[28] = "";
-  boolean dataOutB = false;
-  int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
-  int runningB = 0;
-  int x, y, z, f1, f2;
-  String runningS, xS ,yS, zS, f1S, f2S;
+  RF24Network network(radio);
+  RF24Mesh mesh(radio, network);
 
 //Motor
   unsigned char INA1 = 2;
@@ -49,12 +48,23 @@
                            PWM2,
                            EN2DIAG2,
                            CS2);
-                          
-  //Which side of the robot the pod is - needed for arcade control
+
+//Vars
+
+  struct payload_t {
+    String data;
+  };
+  int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
+  int runningB = 0;
+  int x, y, z, f1, f2;
+  String runningS, xS ,yS, zS, f1S, f2S;
+  
+  //SET SIDE AND MESH ID HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
+  #define nodeID 1
+  
   const String LEFT = "left";
   const String RIGHT = "right";
-
-//SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
+  
   String side = LEFT;
   //String side = RIGHT;
   
@@ -65,19 +75,19 @@ void setup() {
   pinMode(led, OUTPUT);
   
   //Radio
-    radio.begin();
-    radio.openWritingPipe(addresses[0]);
-    radio.openReadingPipe(1, addresses[1]);
-    radio.setPALevel(RF24_PA_MAX);
-    
-    delay(1000);
+  
+    Serial.println("Connecting to mesh");
+    mesh.setNodeID(nodeID);
+    mesh.begin();
+
+    delay(200);
     
   //Motor Driver  
+    Serial.println("Starting Motor Driver");
     md.init();
-    Serial.println("Motor Driver Starting");
 
   //Startup display
-    Serial.print(F("Started "));
+    Serial.print(F("Starting "));
     Serial.print(side);
     Serial.println(F(" pod"));
   
@@ -96,22 +106,26 @@ void setup() {
 void loop(){
 
   md.init();
+  mesh.update();
   digitalWrite(led, LOW);
   
-  radio.startListening();
     //Reading
-    if(radio.available()){
-      while(radio.available())
-        radio.read(&dataIn, sizeof(dataIn));
+    String data;
+
+    if(network.available()){
+      while(network.available()){
+        RF24NetworkHeader header;
+        payload_t payload;
+        network.read(header, &payload, sizeof(payload));
+        data = String(payload.data);
+      }
 
       
       //Testing
       Serial.print("Recieved: ");
-      Serial.println(dataIn);
+      Serial.println(data);
       digitalWrite(led, HIGH);
-
-      String data = String(dataIn);
-  
+      
       //Indexing
         ind1 = data.indexOf('/');
         ind2 = data.indexOf('/',ind1+1);
@@ -177,16 +191,26 @@ void loop(){
             Serial.print(F("Funct = "));
             Serial.println(funct);
           }          
-        }
+        }     
       }
     } 
 }
 
-void respond(String response){
-  dataOutB = true;
-  //Send response;
-
-}
+void respond(String response, int target){
+  
+  if(!mesh.write(&response, 'M', sizeof(response), target)){
+    Serial.println("Failed to send");
+    //Test connection if failed
+    if(!mesh.checkConnection() ){
+      Serial.println("Renewing Address");
+      mesh.renewAddress();
+    }else{
+      Serial.println("Send failed, test worked");
+    }
+  }else{
+    Serial.print("Sent: ");Serial.print(response);Serial.print(" to ");Serial.println(target);
+  }
+}  `
 
 void stopIfFault(){
   
