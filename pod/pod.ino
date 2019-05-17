@@ -54,12 +54,13 @@
   struct payload_t {
     String data;
   };
+  
   int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
   int runningB = 0;
   int x, y, z, f1, f2;
   String runningS, xS ,yS, zS, f1S, f2S;
   
-  //SET SIDE AND MESH ID HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
+  //SET SIDE AND MESH ID HERE FOR EVERY POD MADE|-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-\-|
   #define nodeID 1
   
   const String LEFT = "left";
@@ -112,13 +113,13 @@ void loop(){
     //Reading
     String data;
 
-    if(network.available()){
-      while(network.available()){
-        RF24NetworkHeader header;
-        payload_t payload;
-        network.read(header, &payload, sizeof(payload));
-        data = String(payload.data);
-      }
+    
+    while(network.available()){
+      RF24NetworkHeader header;
+      payload_t payload;
+      network.read(header, &payload, sizeof(payload));
+      data = String(payload.data);
+      
 
       
       //Testing
@@ -210,7 +211,7 @@ void respond(String response, int target){
   }else{
     Serial.print("Sent: ");Serial.print(response);Serial.print(" to ");Serial.println(target);
   }
-}  `
+}
 
 void stopIfFault(){
   
