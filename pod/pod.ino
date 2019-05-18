@@ -1,8 +1,8 @@
-#include <DualVNH5019MotorShield.h>
-#include <RF24Network.h>
-#include <RF24.h>
 #include <SPI.h>
-
+#include <DualVNH5019MotorShield.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <stdlib.h>
 
 /*
  * Mini Pod Code
@@ -17,14 +17,21 @@
  */
  
   int led = 19;
-  
+  int led2 = 18;
+
 //Comm
   RF24 radio (7, 8); // CE, CSN
-  RF24Network network(radio);
-  const uint16_t master = 00;     //Octal format of nodes
-  const uint16_t left_node = 01;
-  const uint16_t right_node = 02;
-
+  const byte addresses[2][6] = {"AAAAA", "AAAAA"};
+  char dataIn[28] = "";
+  boolean dataOutB = false;
+  int startInd, ind1, ind2, ind3, ind4, ind5, ind6, endInd;
+  int runningB = 0;
+  int x, y, z, f1, f2;
+  String runningS, xS ,yS, zS, f1S, f2S;
+  String tS;
+  unsigned long t;
+  unsigned long Lt = 0;
+  
 //Motor
   unsigned char INA1 = 2;
   unsigned char INB1 = 4;
@@ -46,38 +53,27 @@
                            PWM2,
                            EN2DIAG2,
                            CS2);
-
-//Vars
-
-  struct payload_t {
-    String data;
-  };
-  int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
-  int runningB = 0;
-  int x, y, z, f1, f2;
-  String runningS, xS ,yS, zS, f1S, f2S;
-      int iter = 0;
-      String L = "";
-      String L5 = "";
-      String L10 = "";
-      String L15 = "";
-      String L20 = "";
-  //SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
+                          
+  //Which side of the robot the pod is - needed for arcade control
   const String LEFT = "left";
   const String RIGHT = "right";
-  String side = LEFT; const uint16_t this_node = left_node;
-  //String side = RIGHT;const uint16_t this_node = right_node;
+
+//SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
+  //String side = LEFT;
+  String side = RIGHT;
   
 void setup() {
   
   Serial.begin(115200);
-  SPI.begin();
   
   pinMode(led, OUTPUT);
+  pinMode(led2, OUTPUT);
   
   //Radio
     radio.begin();
-    network.begin(/*channel*/ 90, /*node address*/ this_node);
+    radio.openWritingPipe(addresses[0]);
+    radio.openReadingPipe(1, addresses[1]);
+    radio.setPALevel(RF24_PA_MAX);
     
     delay(1000);
     
@@ -102,24 +98,31 @@ void setup() {
     
 }
 
+int iter = 0;
+int check = 2000;
+
 void loop(){
 
   md.init();
   digitalWrite(led, LOW);
+  digitalWrite(led2, LOW);
+
   
-  network.update();
+  if(iter % check == 0)
+    md.setSpeeds(0,0);
+  
+
+  radio.startListening();
     //Reading
     if(radio.available()){
-      String dataIn = "";
+      Serial.println("Radio available");
       while(radio.available())
         radio.read(&dataIn, sizeof(dataIn));
 
-      
       //Testing
       Serial.print("Recieved: ");
       Serial.println(dataIn);
       digitalWrite(led, HIGH);
-
       String data = String(dataIn);
   
       //Indexing
@@ -128,6 +131,7 @@ void loop(){
         ind3 = data.indexOf('/',ind2+1);
         ind4 = data.indexOf('/',ind3+1);
         ind5 = data.indexOf('/',ind4+1);
+        ind6 = data.indexOf('/',ind5+1);
         endInd = data.indexOf('>');
   
       //String Data
@@ -135,8 +139,9 @@ void loop(){
         xS = data.substring(ind1+1,ind2);
         yS = data.substring(ind2+1,ind3);
         zS = data.substring(ind3+1,ind4);
-        f1S = data.substring(ind4+1,endInd);
-        f2S = data.substring(ind5+1,endInd);
+        f1S = data.substring(ind4+1,ind5);
+        f2S = data.substring(ind5+1,ind6);
+        tS = data.substring(ind6+1,endInd);
       
       //Int data
         runningB = runningS.toInt();
@@ -145,8 +150,15 @@ void loop(){
         z = zS.toInt();
         f1 = f1S.toInt();
         f2 = f2S.toInt();
-
-      if(runningB && (L5 != L10 && L5 != L20 &&  L10 != L20  )){        
+        char tC[sizeof(tS)];
+        tS.toCharArray(tC, sizeof(tC));
+        t = strtoul(tC, NULL, 10);
+        
+      if(runningB){ 
+        
+        if(true)
+          digitalWrite(led2, HIGH);
+          
         //Control motors
           if(x < 40 && x > -40)
             x = 0;
@@ -155,7 +167,7 @@ void loop(){
                                  
           //For left
           if(side == LEFT){
-            int funct = -(.75*y) +x;
+            int funct = -(.75*y)+x;
             //brakes
             if (funct < 30 && funct > -30){
               md.setBrakes(0,0);
@@ -163,7 +175,7 @@ void loop(){
             }else{
               int motorSpeed = map(funct, -370, 370, -400, 400);
               md.setSpeeds(-motorSpeed, -motorSpeed);
-              stopIfFault();
+              //stopIfFault();
               Serial.print(F("Speed set to: "));
               Serial.println(motorSpeed);
               Serial.print(F("Funct = "));
@@ -181,7 +193,7 @@ void loop(){
           }else{
             int motorSpeed = map(funct, -370, 370, -400, 400);
             md.setSpeeds(motorSpeed, motorSpeed);
-            stopIfFault();
+            //stopIfFault();
             Serial.print(F("Speed set to: "));
             Serial.println(motorSpeed);
             Serial.print(F("Funct = "));
@@ -189,19 +201,16 @@ void loop(){
           }          
         }
       }
-      /*
-      if(iter % 5 == 0){
-        L20 = L15;
-        L15 = L10;
-        L10 = L5;
-        L5 = data;
-      }
-      
-      L = data;
-      iter++;
-      */
-      data = "<0/0/0/0/x/x/>";
-    } 
+    }
+
+   
+  iter++;
+}
+
+void respond(String response){
+  dataOutB = true;
+  //Send response;
+
 }
 
 void stopIfFault(){

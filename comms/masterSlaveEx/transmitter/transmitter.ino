@@ -20,14 +20,13 @@
 //Set up nRF24L01 radio on SPI bus plus pins 7 & 8 
 
 //Radio
-  RF24 radio(7, 8);\
-  byte addresses[2][6] = {"XXXXX","XXXXX"};
+  RF24 radio(7, 8);
+  byte addresses[2][6] = {"AAAAA","AAAAA"};
   
 //Data
   int failcount = 0;
   int successcount = 0;
   bool mustListen;
-  char data[4] = "test";
   
 void setup() {
   
@@ -41,12 +40,13 @@ void loop() {
   radio.setPALevel(RF24_PA_MAX);
   radio.openWritingPipe(addresses[1]);
   radio.openReadingPipe(1, addresses[0]);
-  
+
+  delay(200);
 
   //Send
     radio.stopListening();
     mustListen = true;
-
+    String data = "test";
     //Attempts to send w/ error checking
     if (!radio.write( &data, sizeof(data) )){
       
