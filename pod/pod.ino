@@ -59,8 +59,8 @@
   const String RIGHT = "right";
 
 //SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
-  //String side = LEFT;
-  String side = RIGHT;
+  const String side = LEFT;
+  //const String side = RIGHT;
   
 void setup() {
   
@@ -160,20 +160,22 @@ void loop(){
           digitalWrite(led2, HIGH);
           
         //Control motors
-          if(x < 40 && x > -40)
+          
+          if(x > -30 && x < 30)
             x = 0;
-          if(y < 40 && y > -40)
-            y = 0; 
-                                 
+
+          if(y > -30 && y < 30)
+            y = 0;
+          
           //For left
           if(side == LEFT){
-            int funct = -(.75*y)+x;
+            int funct = y+x;
             //brakes
             if (funct < 30 && funct > -30){
-              md.setBrakes(0,0);
+              md.setBrakes(100,100);
             //Drive
             }else{
-              int motorSpeed = map(funct, -370, 370, -400, 400);
+              int motorSpeed = map(funct, -380, 380, -400, 400);
               md.setSpeeds(-motorSpeed, -motorSpeed);
               stopIfFault();
               iter = 0;
@@ -186,13 +188,13 @@ void loop(){
         
         //For right
         if(side == RIGHT){
-          int funct = (.75*y)+x;
+          int funct = y-x;
           //Brakes
           if (funct < 30 && funct > -30){
-            md.setBrakes(0,0);
+            md.setBrakes(100,100);
             //Drive
           }else{
-            int motorSpeed = map(funct, -370, 370, -400, 400);
+            int motorSpeed = map(funct, -380, 380, -400, 400);
             md.setSpeeds(motorSpeed, motorSpeed);
             stopIfFault();
             iter = 0;
