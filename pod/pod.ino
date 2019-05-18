@@ -99,7 +99,7 @@ void setup() {
 }
 
 int iter = 0;
-int check = 2000;
+int check = 1000;
 
 void loop(){
 
@@ -175,7 +175,8 @@ void loop(){
             }else{
               int motorSpeed = map(funct, -370, 370, -400, 400);
               md.setSpeeds(-motorSpeed, -motorSpeed);
-              //stopIfFault();
+              stopIfFault();
+              iter = 0;
               Serial.print(F("Speed set to: "));
               Serial.println(motorSpeed);
               Serial.print(F("Funct = "));
@@ -193,7 +194,8 @@ void loop(){
           }else{
             int motorSpeed = map(funct, -370, 370, -400, 400);
             md.setSpeeds(motorSpeed, motorSpeed);
-            //stopIfFault();
+            stopIfFault();
+            iter = 0;
             Serial.print(F("Speed set to: "));
             Serial.println(motorSpeed);
             Serial.print(F("Funct = "));
