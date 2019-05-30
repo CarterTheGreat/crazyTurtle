@@ -1,4 +1,4 @@
-#include <SPI.h>
+zaa#include <SPI.h>
 #include <DualVNH5019MotorShield.h>
 #include <nRF24L01.h>
 #include <RF24.h>
@@ -22,7 +22,7 @@
 //Comm
   RF24 radio (7, 8); // CE, CSN
   const byte addresses[2][6] = {"AAAAA", "AAAAA"};
-  char dataIn[28] = "";
+  char dataIn[40] = "";
   boolean dataOutB = false;
   int startInd, ind1, ind2, ind3, ind4, ind5, ind6, endInd;
   int runningB = 0;

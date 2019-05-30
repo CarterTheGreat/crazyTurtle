@@ -56,7 +56,7 @@ void loop() {
  
   if( radio.available()){
  
-    char data[28] = "";
+    char data[40] = "";
   
     while (radio.available()) {
       radio.read( &data, sizeof(data) );
