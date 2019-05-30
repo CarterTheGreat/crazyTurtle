@@ -2,7 +2,7 @@
 #include <DualVNH5019MotorShield.h>
 #include <nRF24L01.h>
 #include <RF24.h>
-
+#include <stdlib.h>
 
 /*
  * Mini Pod Code
@@ -17,17 +17,21 @@
  */
  
   int led = 19;
-  
+  int led2 = 18;
+
 //Comm
   RF24 radio (7, 8); // CE, CSN
-  const byte addresses[][6] = {"AAAAA", "AAAAA"};
+  const byte addresses[2][6] = {"AAAAA", "AAAAA"};
   char dataIn[28] = "";
   boolean dataOutB = false;
-  int startInd, ind1, ind2, ind3, ind4, ind5, endInd;
+  int startInd, ind1, ind2, ind3, ind4, ind5, ind6, endInd;
   int runningB = 0;
   int x, y, z, f1, f2;
   String runningS, xS ,yS, zS, f1S, f2S;
-
+  String tS;
+  unsigned long t;
+  unsigned long Lt = 0;
+  
 //Motor
   unsigned char INA1 = 2;
   unsigned char INB1 = 4;
@@ -55,14 +59,15 @@
   const String RIGHT = "right";
 
 //SET SIDE HERE FOR EVERY POD MADE-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-NOTICE-\-\-\-\-\-\-\-\-\-|
-  String side = LEFT;
-  //String side = RIGHT;
+  //String side = LEFT;
+  String side = RIGHT;
   
 void setup() {
   
   Serial.begin(115200);
   
   pinMode(led, OUTPUT);
+  pinMode(led2, OUTPUT);
   
   //Radio
     radio.begin();
@@ -93,23 +98,31 @@ void setup() {
     
 }
 
+int iter = 0;
+int check = 2000;
+
 void loop(){
 
   md.init();
   digitalWrite(led, LOW);
+  digitalWrite(led2, LOW);
+
   
+  if(iter % check == 0)
+    md.setSpeeds(0,0);
+  
+
   radio.startListening();
     //Reading
     if(radio.available()){
+      Serial.println("Radio available");
       while(radio.available())
         radio.read(&dataIn, sizeof(dataIn));
 
-      
       //Testing
       Serial.print("Recieved: ");
       Serial.println(dataIn);
       digitalWrite(led, HIGH);
-
       String data = String(dataIn);
   
       //Indexing
@@ -118,6 +131,7 @@ void loop(){
         ind3 = data.indexOf('/',ind2+1);
         ind4 = data.indexOf('/',ind3+1);
         ind5 = data.indexOf('/',ind4+1);
+        ind6 = data.indexOf('/',ind5+1);
         endInd = data.indexOf('>');
   
       //String Data
@@ -125,8 +139,9 @@ void loop(){
         xS = data.substring(ind1+1,ind2);
         yS = data.substring(ind2+1,ind3);
         zS = data.substring(ind3+1,ind4);
-        f1S = data.substring(ind4+1,endInd);
-        f2S = data.substring(ind5+1,endInd);
+        f1S = data.substring(ind4+1,ind5);
+        f2S = data.substring(ind5+1,ind6);
+        tS = data.substring(ind6+1,endInd);
       
       //Int data
         runningB = runningS.toInt();
@@ -135,8 +150,15 @@ void loop(){
         z = zS.toInt();
         f1 = f1S.toInt();
         f2 = f2S.toInt();
-
-      if(runningB){        
+        char tC[sizeof(tS)];
+        tS.toCharArray(tC, sizeof(tC));
+        t = strtoul(tC, NULL, 10);
+        
+      if(runningB){ 
+        
+        if(true)
+          digitalWrite(led2, HIGH);
+          
         //Control motors
           if(x < 40 && x > -40)
             x = 0;
@@ -145,7 +167,7 @@ void loop(){
                                  
           //For left
           if(side == LEFT){
-            int funct = -y+x;
+            int funct = -(.75*y)+x;
             //brakes
             if (funct < 30 && funct > -30){
               md.setBrakes(0,0);
@@ -163,7 +185,7 @@ void loop(){
         
         //For right
         if(side == RIGHT){
-          int funct = y+x;
+          int funct = (.75*y)+x;
           //Brakes
           if (funct < 30 && funct > -30){
             md.setBrakes(0,0);
@@ -179,7 +201,10 @@ void loop(){
           }          
         }
       }
-    } 
+    }
+
+   
+  iter++;
 }
 
 void respond(String response){
